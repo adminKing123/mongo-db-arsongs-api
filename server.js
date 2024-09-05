@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
+const axios = require("axios");
 
 const app = express();
 const Song = require("./models/Song");
@@ -248,6 +249,136 @@ app.get("/genre/:id", async (req, res) => {
     res.json(genre);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+// streams
+app.get("/stream/image/*", async (req, res) => {
+  const imagePath = encodeURIComponent(req.params[0]);
+
+  const allowedPatterns = [
+    /^album-images\/(300x300|1200x1200)\/[^/]+$/,
+    /^artist-images\/(300x300|1200x1200)\/[^/]+$/,
+  ];
+
+  // Check if the imagePath matches any of the allowed patterns
+  const isValidPath = allowedPatterns.some((pattern) =>
+    pattern.test(req.params[0])
+  );
+
+  if (!isValidPath) {
+    return res.status(400).send("Invalid image path");
+  }
+
+  const url = `${process.env.SRC_URI}/${imagePath}`;
+
+  try {
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
+    });
+
+    res.setHeader("Content-Type", response.headers["content-type"]);
+
+    response.data.pipe(res);
+  } catch (error) {
+    console.log(error);
+    if (error.response && error.response.status === 404) {
+      res.status(404).send("Image not found");
+    } else {
+      res.status(500).send("Server Error");
+    }
+  }
+});
+
+app.get("/stream/song/*", async (req, res) => {
+  const songPath = encodeURIComponent(req.params[0]);
+
+  const allowedPatterns = [/^songs-file\/[^/]+$/];
+
+  // Check if the imagePath matches any of the allowed patterns
+  const isValidPath = allowedPatterns.some((pattern) =>
+    pattern.test(req.params[0])
+  );
+
+  if (!isValidPath) {
+    return res.status(400).send("Invalid song file path");
+  }
+
+  const url = `${process.env.SRC_URI}/${songPath}`;
+
+  try {
+    const range = req.headers.range;
+    if (!range) {
+      return res.status(416).send("Range header required");
+    }
+
+    const headResponse = await axios.head(url);
+    const fileSize = headResponse.headers["content-length"];
+
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+
+    if (start >= fileSize || end >= fileSize) {
+      return res.status(416).send("Requested range not satisfiable");
+    }
+
+    const contentLength = end - start + 1;
+    res.writeHead(206, {
+      "Content-Range": `bytes ${start}-${end}/${fileSize}`,
+      "Accept-Ranges": "bytes",
+      "Content-Length": contentLength,
+      "Content-Type": "audio/mpeg",
+    });
+
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
+      headers: {
+        Range: `bytes=${start}-${end}`,
+      },
+    });
+
+    response.data.pipe(res);
+  } catch (error) {
+    res.status(500).send("Server Error");
+  }
+});
+
+app.get("/get/lyric/*", async (req, res) => {
+  const lrcPath = encodeURIComponent(req.params[0]);
+
+  const allowedPatterns = [/^lrc\/[^/]+$/];
+
+  const isValidPath = allowedPatterns.some((pattern) =>
+    pattern.test(req.params[0])
+  );
+
+  if (!isValidPath) {
+    return res.status(400).send("Invalid lyrics file path");
+  }
+
+  const url = `${process.env.SRC_URI}/${lrcPath}`;
+
+  try {
+    const response = await axios({
+      url,
+      method: "GET",
+      responseType: "stream",
+    });
+
+    res.setHeader("Content-Type", "text/plain");
+
+    response.data.pipe(res);
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      res.status(404).send("Lyrics file not found");
+    } else {
+      res.status(500).send("Server Error");
+    }
   }
 });
 
