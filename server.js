@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const cors = require("cors");
 const mongoose = require("mongoose");
 const axios = require("axios");
 
@@ -19,6 +20,12 @@ mongoose
     console.error("Connection error:", err.message);
     process.exit(1);
   });
+
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 
 app.use(express.json());
 
