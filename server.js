@@ -23,7 +23,7 @@ mongoose
 
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://arythmlite.netlify.app"],
     optionsSuccessStatus: 200,
   })
 );
