@@ -24,6 +24,7 @@ mongoose
 app.use(
   cors({
     origin: "*",
+    optionsSuccessStatus: 200,
   })
 );
 
