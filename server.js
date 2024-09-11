@@ -30,6 +30,13 @@ app.use(
 
 app.use(express.json());
 
+// status
+app.get("/status", (req, res) => {
+  res.json({
+    status: "working",
+  });
+});
+
 // songs
 app.get("/songs", async (req, res) => {
   try {
@@ -72,8 +79,6 @@ app.get("/songs", async (req, res) => {
       }).select("_id");
       filter.artists = { $in: artists.map((artist) => artist._id) };
     }
-
-    console.log(limit);
 
     const songs = await Song.find(filter)
       .populate("album", "code title year thumbnail300x300 thumbnail")
@@ -390,6 +395,6 @@ app.get("/get/lyric/*", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.listen(8080, () => {
   console.log("Server is running on port 3000");
 });
