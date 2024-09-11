@@ -395,6 +395,100 @@ app.get("/get/lyric/*", async (req, res) => {
   }
 });
 
+// randoms
+app.get("/random-song", async (req, res) => {
+  try {
+    const { original_name, album_title, album_code, genre_name, artist_name } =
+      req.query;
+
+    let filter = {};
+
+    if (original_name) {
+      filter.original_name = { $regex: new RegExp(original_name, "i") };
+    }
+
+    if (album_title || album_code) {
+      const albumFilter = {};
+      if (album_title)
+        albumFilter.title = { $regex: new RegExp(album_title, "i") };
+      if (album_code) albumFilter.code = album_code;
+
+      const albums = await Album.find(albumFilter).select("_id");
+      filter.album = { $in: albums.map((album) => album._id) };
+    }
+
+    if (genre_name) {
+      const genres = await Genre.find({
+        name: { $regex: new RegExp(genre_name, "i") },
+      }).select("_id");
+      filter.genre = { $in: genres.map((genre) => genre._id) };
+    }
+
+    if (artist_name) {
+      const artists = await Artist.find({
+        name: { $regex: new RegExp(artist_name, "i") },
+      }).select("_id");
+      filter.artists = { $in: artists.map((artist) => artist._id) };
+    }
+
+    const randomSong = await Song.aggregate([
+      { $match: filter },
+      { $sample: { size: 1 } },
+      {
+        $lookup: {
+          from: "albums",
+          localField: "album",
+          foreignField: "_id",
+          as: "album",
+        },
+      },
+      { $unwind: "$album" },
+      {
+        $lookup: {
+          from: "genres",
+          localField: "genre",
+          foreignField: "_id",
+          as: "genre",
+        },
+      },
+      { $unwind: "$genre" },
+      {
+        $lookup: {
+          from: "artists",
+          localField: "artists",
+          foreignField: "_id",
+          as: "artists",
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          original_name: 1,
+          "album.code": 1,
+          "album.title": 1,
+          "album.year": 1,
+          "album.thumbnail300x300": 1,
+          "album.thumbnail": 1,
+          "genre.name": 1,
+          "artists.name": 1,
+          "artists.artists_thumbnail300x300": 1,
+          "artists.artists_thumbnail": 1,
+        },
+      },
+    ]);
+
+    if (randomSong.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No songs found matching the criteria" });
+    }
+
+    res.json(randomSong[0]);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.listen(8080, () => {
   console.log("Server is running on port 3000");
 });
