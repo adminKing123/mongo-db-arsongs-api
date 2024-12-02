@@ -1,0 +1,49 @@
+# Python-related
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.db
+*.sqlite3
+
+# Django-related
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+media/
+
+# Environment variables and secret files
+.env
+.env.*
+
+# Virtual environment
+venv/
+env/
+.venv/
+.virtualenv/
+
+# Django migrations
+*/migrations/*
+
+# PyCharm project settings
+.idea/
+
+# VSCode project settings
+.vscode/
+
+# macOS system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# Static and media files (you may want to track these in specific cases)
+static/
+media/
+
+# Backup files
+*~
+*.bak
