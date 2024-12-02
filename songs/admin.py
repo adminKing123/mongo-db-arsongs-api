@@ -102,6 +102,9 @@ class SongAdmin(admin.ModelAdmin):
         tag_links = [f'<a href="/admin/songs/tag/{tag.tag.id}/change/">{tag.tag.name}</a>' for tag in tags]  # Create links for each artist
         return mark_safe(", ".join(tag_links))
     
+    def audio_preview(self, obj):
+        return mark_safe(f'<audio controls><source src="{CONFIG["SRC_URI"]}{obj.url}" type="audio/mpeg"></audio>')
+    
     album_name.admin_order_field = 'album'  # Allow sorting by album
     album_name.short_description = 'Album'  # Set the column header name
     custom_url.short_description = 'URL'  # Set custom header for the URL field
@@ -109,7 +112,8 @@ class SongAdmin(admin.ModelAdmin):
     tag_names.short_description = 'Tags'  # Set custom header for the artist names
 
     # Define the fields for the form layout when editing a Song
-    fields = ['original_name', 'lyrics', 'album', 'url']  # Keep 'url' as a model field
+    fields = ['original_name', 'lyrics', 'album', 'url', 'audio_preview']  # Keep 'url' as a model field
+    readonly_fields = ['audio_preview']
 
     # Use a custom form layout to display related artists and tags
     def get_form(self, request, obj=None, **kwargs):
