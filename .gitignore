@@ -47,3 +47,4 @@ media/
 # Backup files
 *~
 *.bak
+config.py

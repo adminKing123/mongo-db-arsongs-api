@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import sqlite3
 from songs.models import Album, Artist, Tag, Song, SongArtist, SongTag
-
+# python manage.py migrate songs zero && python manage.py migrate songs zero && python manage.py makemigrations songs && python manage.py migrate songs && python manage.py seed_from_db
 class Command(BaseCommand):
     help = "Seed data from another SQLite database"
 

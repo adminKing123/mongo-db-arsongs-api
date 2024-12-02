@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Album, Artist, Tag, Song, SongArtist, SongTag
 from django.utils.safestring import mark_safe
-from .config import CONFIG
+from config import CONFIG
 
 # Register Album model
 @admin.register(Album)
