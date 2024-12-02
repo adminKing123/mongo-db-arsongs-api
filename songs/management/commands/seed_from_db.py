@@ -1,13 +1,14 @@
 from django.core.management.base import BaseCommand
 import sqlite3
 from songs.models import Album, Artist, Tag, Song, SongArtist, SongTag
+from config import CONFIG
 # python manage.py migrate songs zero && python manage.py migrate songs zero && python manage.py makemigrations songs && python manage.py migrate songs && python manage.py seed_from_db
 class Command(BaseCommand):
     help = "Seed data from another SQLite database"
 
     def handle(self, *args, **kwargs):
         # Connect to the source SQLite database
-        source_conn = sqlite3.connect("D://Public//Local//PYCODES//arsongspycodes//db.sqlite3")  # Replace with your source DB path
+        source_conn = sqlite3.connect(CONFIG["SEED_DB_PATH"])  # Replace with your source DB path
         cursor = source_conn.cursor()
 
         try:
