@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-q(ip@6wxwni(!tsm134wsu@g-*cx(9636h+91z&$r$m6+2+wpn
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['pysqlite3version.pythonanywhere.com']
+ALLOWED_HOSTS = CONFIG["ALLOWED_HOSTS"]
 
 
 # Application definition
