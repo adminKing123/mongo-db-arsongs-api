@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-q(ip@6wxwni(!tsm134wsu@g-*cx(9636h+91z&$r$m6+2+wpn'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = CONFIG["DEBUG"]
 
 ALLOWED_HOSTS = CONFIG["ALLOWED_HOSTS"]
 
@@ -126,12 +126,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25,
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
-}
+REST_FRAMEWORK = CONFIG["REST_FRAMEWORK"]
 
 STATIC_ROOT = CONFIG['COLLECT_STATIC_PATH']
