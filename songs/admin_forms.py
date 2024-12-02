@@ -1,4 +1,3 @@
-import urllib.parse
 from github import Github
 from django import forms
 from django.core.validators import FileExtensionValidator
@@ -49,16 +48,8 @@ class SongAdminForm(forms.ModelForm):
             except Exception as e:
                 print(f"Failed to upload {filename} to GitHub: {e}")
 
-            # URL-encode the file path and update the song instance details
-            instance.title = filename
-            encoded_url = urllib.parse.quote(file_path)
-            instance.url = encoded_url
-
         # Save the instance to generate an ID if not already present
         if commit:
-            instance.save()
-            # Now that the ID exists, set the lyrics field
-            instance.lyrics = f"lrc/{instance.id}.lrc"
-            instance.save()
+            instance.save()  # Save the instance first to generate the ID
 
         return instance

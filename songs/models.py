@@ -1,4 +1,5 @@
 from django.db import models
+import urllib.parse
 from urllib.parse import unquote
 from github import Github
 from config import CONFIG
@@ -14,7 +15,7 @@ class Album(models.Model):
         return self.title
 
 class Artist(models.Model):
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, null=False, unique=True)
     thumbnail300x300 = models.CharField(max_length=10000, null=False)
     thumbnail1200x1200 = models.CharField(max_length=10000, null=False)
 
@@ -22,7 +23,7 @@ class Artist(models.Model):
         return self.name
 
 class Tag(models.Model):
-    name = models.CharField(max_length=255, null=False)
+    name = models.CharField(max_length=255, null=False, unique=True)
 
     def __str__(self):
         return self.name
@@ -30,7 +31,7 @@ class Tag(models.Model):
 class Song(models.Model):
     title = models.CharField(max_length=255, unique=True, null=False)
     url = models.CharField(max_length=10000, null=False)
-    original_name = models.CharField(max_length=255, null=False)
+    original_name = models.CharField(max_length=255, null=False, unique=True)
     lyrics = models.CharField(max_length=10000, null=False)
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='songs')
 
@@ -65,6 +66,20 @@ class Song(models.Model):
 
         # Now delete the song instance from the database
         super().delete(*args, **kwargs)
+
+    def save(self, *args, **kwargs):
+        # Save the instance to generate the ID
+        super().save(*args, **kwargs)
+        filename = f"{self.album.code} - {self.original_name}.mp3" 
+        # Set the lyrics field after the save
+        self.lyrics = f"lrc/{self.id}.lrc"
+        file_path = f'songs-file/{filename}'
+        encoded_url = urllib.parse.quote(file_path)
+        self.url = encoded_url
+        self.title = filename
+
+        # Save the instance again to update the lyrics field
+        super().save(*args, **kwargs)
 
 class SongArtist(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE, related_name='song_artists')

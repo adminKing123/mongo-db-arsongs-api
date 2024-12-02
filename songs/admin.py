@@ -120,7 +120,7 @@ class SongAdmin(admin.ModelAdmin):
     tag_names.short_description = 'Tags'  # Set custom header for the artist names
 
     # Define the fields for the form layout when editing a Song
-    readonly_fields = ['audio_preview']
+    readonly_fields = ['audio_preview', 'title']
 
     # Use a custom form layout to display related artists and tags
     def get_form(self, request, obj=None, **kwargs):
