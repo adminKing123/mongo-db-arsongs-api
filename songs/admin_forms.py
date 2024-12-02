@@ -6,7 +6,7 @@ from config import CONFIG
 
 class SongAdminForm(forms.ModelForm):
     mp3_file = forms.FileField(
-        required=False,
+        required=True,
         label="Upload MP3 File",
         validators=[FileExtensionValidator(allowed_extensions=['mp3'])]
     )
