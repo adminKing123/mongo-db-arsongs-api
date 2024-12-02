@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Album, Artist, Tag, Song, SongArtist, SongTag
 from django.utils.safestring import mark_safe
 from config import CONFIG
+from .admin_forms import SongAdminForm
 
 # Register Album model
 @admin.register(Album)
@@ -73,14 +74,20 @@ class SongTagInline(admin.TabularInline):
 
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
+    form = SongAdminForm
     list_display = ['original_name', 'album_name', 'year', 'custom_url', 'artist_names', 'tag_names']  # Add 'artist_names' to list_display
     search_fields = ['original_name']
     inlines = [SongArtistInline, SongTagInline]  # Show SongArtists and SongTags as inlines
 
+    def get_fields(self, request, obj=None):
+        if obj:  # Editing or viewing an existing Song
+            return ['title', 'original_name', 'lyrics', 'album', 'url', 'audio_preview']
+        else:  # Adding a new Song
+            return ['original_name', 'album', 'mp3_file']
+
     # Custom method to display album name instead of ID
     def album_name(self, obj):
         return mark_safe(f'<a href="/admin/songs/album/{obj.album.id}/change/">{obj.album.title}</a>')
-        return obj.album.title  # Access the title of the related album
     
     def year(self, obj):
         return obj.album.year  # Access the year of the related album
@@ -103,6 +110,7 @@ class SongAdmin(admin.ModelAdmin):
         return mark_safe(", ".join(tag_links))
     
     def audio_preview(self, obj):
+        print(f'{CONFIG["SRC_URI"]}{obj.url}')
         return mark_safe(f'<audio controls><source src="{CONFIG["SRC_URI"]}{obj.url}" type="audio/mpeg"></audio>')
     
     album_name.admin_order_field = 'album'  # Allow sorting by album
@@ -112,7 +120,6 @@ class SongAdmin(admin.ModelAdmin):
     tag_names.short_description = 'Tags'  # Set custom header for the artist names
 
     # Define the fields for the form layout when editing a Song
-    fields = ['original_name', 'lyrics', 'album', 'url', 'audio_preview']  # Keep 'url' as a model field
     readonly_fields = ['audio_preview']
 
     # Use a custom form layout to display related artists and tags
