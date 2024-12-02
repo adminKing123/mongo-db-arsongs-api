@@ -1,12 +1,12 @@
 from github import Github
 from django import forms
 from django.core.validators import FileExtensionValidator
-from .models import Song
+from .models import Song, Album
 from config import CONFIG
 
 class SongAdminForm(forms.ModelForm):
     mp3_file = forms.FileField(
-        required=True,
+        required=False,
         label="Upload MP3 File",
         validators=[FileExtensionValidator(allowed_extensions=['mp3'])]
     )
@@ -51,5 +51,29 @@ class SongAdminForm(forms.ModelForm):
         # Save the instance to generate an ID if not already present
         if commit:
             instance.save()  # Save the instance first to generate the ID
+
+        return instance
+
+class AlbumAdminForm(forms.ModelForm):
+    image_file = forms.FileField(
+        required=False,
+        label="Upload Image File (1:1 aspect ratio)",
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif'])]
+    )
+
+    class Meta:
+        model = Album
+        fields = ['image_file']
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # Handle the image file upload
+        image_file = self.cleaned_data.get('image_file')
+        if image_file:
+            instance.image_file = image_file  # Assign the uploaded image to the instance field
+
+        if commit:
+            instance.save()
 
         return instance

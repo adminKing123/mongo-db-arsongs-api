@@ -1,14 +1,30 @@
+from typing import Any
 from django.contrib import admin
+from django.http.request import HttpRequest
 from .models import Album, Artist, Tag, Song, SongArtist, SongTag
 from django.utils.safestring import mark_safe
 from config import CONFIG
-from .admin_forms import SongAdminForm
+from .admin_forms import SongAdminForm, AlbumAdminForm
 
 # Register Album model
 @admin.register(Album)
 class AlbumAdmin(admin.ModelAdmin):
+    form = AlbumAdminForm
     list_display = ['code', 'title', 'year', 'custom_thumbnail300x300', 'custom_thumbnail1200x1200']
     search_fields = ['title', 'code']
+
+    def get_fields(self, request, obj=None):
+        if obj:  # Editing or viewing an existing Album
+            return ['code', 'title', 'year', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+        else:  # Adding a new Album
+            return ['code', 'title', 'year', 'image_file']  # image_file should be included when creating
+
+        
+    def get_readonly_fields(self, request, obj):
+        if obj:  # Editing or viewing an existing Song
+            return ['code', 'title', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+        else:  # Adding a new Song
+            return ['thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
 
     def custom_thumbnail300x300(self, obj):
         # Custom logic for the URL (display as a clickable link)
@@ -25,7 +41,7 @@ class AlbumAdmin(admin.ModelAdmin):
         return mark_safe(f'<img src="{link}" alt="{obj.title}" width="300" height="300" style="border: 1px solid var(--border-color);border-radius:4px;" />')
     
     fields = ['code', 'title', 'year', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
-    readonly_fields = ['custom_thumbnailpreview']
+    
     custom_thumbnail300x300.short_description = 'thumbnail300x300'
     custom_thumbnail1200x1200.short_description = 'thumbnail1200x1200'
     custom_thumbnailpreview.short_description = 'Thumbnail Preview'
@@ -81,9 +97,15 @@ class SongAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         if obj:  # Editing or viewing an existing Song
-            return ['title', 'original_name', 'lyrics', 'album', 'url', 'audio_preview']
+            return ['title', 'original_name', 'album_name', 'lyrics', 'url', 'audio_preview']
         else:  # Adding a new Song
             return ['original_name', 'album', 'mp3_file']
+        
+    def get_readonly_fields(self, request, obj):
+        if obj:  # Editing or viewing an existing Song
+            return ['audio_preview', 'title', 'lyrics', 'url', 'original_name', 'album_name']
+        else:  # Adding a new Song
+            return []
 
     # Custom method to display album name instead of ID
     def album_name(self, obj):
@@ -119,13 +141,7 @@ class SongAdmin(admin.ModelAdmin):
     artist_names.short_description = 'Artists'  # Set custom header for the artist names
     tag_names.short_description = 'Tags'  # Set custom header for the artist names
 
-    # Define the fields for the form layout when editing a Song
-    readonly_fields = ['audio_preview', 'title', 'lyrics', 'url']
-
     # Use a custom form layout to display related artists and tags
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        
-        # Customize the form fields to include artists and tags
-        form.base_fields['album'].queryset = Album.objects.all()  # All albums
         return form
