@@ -107,7 +107,7 @@ class Tag(models.Model):
 class Song(models.Model):
     title = models.CharField(max_length=255, unique=True, null=False)
     url = models.CharField(max_length=10000, null=False)
-    original_name = models.CharField(max_length=255, null=False, unique=True)
+    original_name = models.CharField(max_length=255, null=False)
     lyrics = models.CharField(max_length=10000, null=False)
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name='songs')
 
