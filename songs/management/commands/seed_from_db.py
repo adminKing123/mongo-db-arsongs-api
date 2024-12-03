@@ -2,7 +2,8 @@ from django.core.management.base import BaseCommand
 import sqlite3
 from songs.models import Album, Artist, Tag, Song, SongArtist, SongTag
 from config import CONFIG
-# python manage.py migrate songs zero && python manage.py migrate songs zero && python manage.py makemigrations songs && python manage.py migrate songs && python manage.py seed_from_db
+from tqdm import tqdm  # Import tqdm for progress bars
+
 class Command(BaseCommand):
     help = "Seed data from another SQLite database"
 
@@ -16,7 +17,7 @@ class Command(BaseCommand):
             self.stdout.write("Seeding Albums...")
             cursor.execute("SELECT id, code, title, year, thumbnail300x300, thumbnail1200x1200 FROM albums")
             albums = cursor.fetchall()
-            for id, code, title, year, thumb300, thumb1200 in albums:
+            for id, code, title, year, thumb300, thumb1200 in tqdm(albums, desc="Albums", unit="album"):
                 Album.objects.get_or_create(
                     id=id,
                     code=code,
@@ -30,7 +31,7 @@ class Command(BaseCommand):
             self.stdout.write("Seeding Artists...")
             cursor.execute("SELECT id, name, thumbnail300x300, thumbnail1200x1200 FROM artists")
             artists = cursor.fetchall()
-            for artist_id, name, thumb300, thumb1200 in artists:
+            for artist_id, name, thumb300, thumb1200 in tqdm(artists, desc="Artists", unit="artist"):
                 Artist.objects.get_or_create(
                     id=artist_id,
                     name=name,
@@ -42,14 +43,14 @@ class Command(BaseCommand):
             self.stdout.write("Seeding Tags...")
             cursor.execute("SELECT id, name FROM tags")
             tags = cursor.fetchall()
-            for tag_id, name in tags:
+            for tag_id, name in tqdm(tags, desc="Tags", unit="tag"):
                 Tag.objects.get_or_create(id=tag_id, name=name)
 
             # Seed Songs
             self.stdout.write("Seeding Songs...")
             cursor.execute("SELECT id, title, url, original_name, lyrics, album_id FROM songs")
             songs = cursor.fetchall()
-            for song_id, title, url, original_name, lyrics, album_id in songs:
+            for song_id, title, url, original_name, lyrics, album_id in tqdm(songs, desc="Songs", unit="song"):
                 album = Album.objects.get(pk=album_id)  # Resolve foreign key for album
                 song = Song.objects.get_or_create(
                     id=song_id,
@@ -67,7 +68,7 @@ class Command(BaseCommand):
                     artist = Artist.objects.get(id=artist_id)  # Resolve artist by ID
                     SongArtist.objects.get_or_create(song=song, artist=artist)
 
-                # # Seed Song-Tag Relationship (Many-to-Many)
+                # Seed Song-Tag Relationship (Many-to-Many)
                 cursor.execute("SELECT tag_id FROM songtags WHERE song_id = ?", (song_id,))
                 tag_ids = cursor.fetchall()
                 for tag_id, in tag_ids:
