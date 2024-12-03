@@ -110,13 +110,13 @@ class SongAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         if obj:  # Editing or viewing an existing Song
-            return ['title', 'original_name', 'album_name', 'lyrics', 'url', 'audio_preview']
+            return ['title', 'original_name', 'album_name', 'custom_lyrics', 'url', 'audio_preview']
         else:  # Adding a new Song
             return ['original_name', 'album', 'mp3_file']
         
     def get_readonly_fields(self, request, obj):
         if obj:  # Editing or viewing an existing Song
-            return ['audio_preview', 'title', 'lyrics', 'url', 'original_name', 'album_name']
+            return ['audio_preview', 'custom_lyrics', 'title', 'url', 'original_name', 'album_name']
         else:  # Adding a new Song
             return []
 
@@ -136,9 +136,15 @@ class SongAdmin(admin.ModelAdmin):
         print(f'{CONFIG["SRC_URI"]}{obj.url}')
         return mark_safe(f'<audio controls><source src="{CONFIG["SRC_URI"]}{obj.url}" type="audio/mpeg"></audio>')
     
+    def custom_lyrics(self, obj):
+        # Custom logic for the URL (display as a clickable link)
+        link = f'{CONFIG["SRC_URI"]}{obj.lyrics}'  # Generate the full URL
+        return mark_safe(f'<a href="{link}" target="_blank">link</a>')
+    
     album_name.admin_order_field = 'album'  # Allow sorting by album
     album_name.short_description = 'Album'  # Set the column header name
     custom_url.short_description = 'URL'  # Set custom header for the URL field
+    custom_lyrics.short_description = 'Lyrics'  # Set custom header for the URL field
 
     # Use a custom form layout to display related artists and tags
     def get_form(self, request, obj=None, **kwargs):
