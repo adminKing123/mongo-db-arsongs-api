@@ -22,7 +22,7 @@ class AlbumAdmin(admin.ModelAdmin):
         
     def get_readonly_fields(self, request, obj):
         if obj:  # Editing or viewing an existing Song
-            return ['code', 'title', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+            return ['code', 'title', 'year', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
         else:  # Adding a new Song
             return ['thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
 
