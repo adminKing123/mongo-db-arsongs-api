@@ -104,7 +104,7 @@ class SongTagInline(admin.TabularInline):
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
     form = SongAdminForm
-    list_display = ['original_name', 'album_name', 'year', 'custom_url', 'artist_names', 'tag_names']  # Add 'artist_names' to list_display
+    list_display = ['original_name', 'album_name', 'year', 'custom_url']  # Add 'artist_names' to list_display
     search_fields = ['original_name']
     inlines = [SongArtistInline, SongTagInline]  # Show SongArtists and SongTags as inlines
 
@@ -132,18 +132,6 @@ class SongAdmin(admin.ModelAdmin):
         link = f'{CONFIG["SRC_URI"]}{obj.url}'  # Generate the full URL
         return mark_safe(f'<a href="{link}" target="_blank">{obj.title}</a>')
     
-    def artist_names(self, obj):
-        # Get the related artists and generate clickable links
-        artists = obj.song_artists.all()  # Access related SongArtist instances
-        artist_links = [f'<a href="/admin/songs/artist/{artist.artist.id}/change/">{artist.artist.name}</a>' for artist in artists]  # Create links for each artist
-        return mark_safe(", ".join(artist_links))
-    
-    def tag_names(self, obj):
-        # Get the related artists and generate clickable links
-        tags = obj.song_tags.all()  # Access related SongArtist instances
-        tag_links = [f'<a href="/admin/songs/tag/{tag.tag.id}/change/">{tag.tag.name}</a>' for tag in tags]  # Create links for each artist
-        return mark_safe(", ".join(tag_links))
-    
     def audio_preview(self, obj):
         print(f'{CONFIG["SRC_URI"]}{obj.url}')
         return mark_safe(f'<audio controls><source src="{CONFIG["SRC_URI"]}{obj.url}" type="audio/mpeg"></audio>')
@@ -151,8 +139,6 @@ class SongAdmin(admin.ModelAdmin):
     album_name.admin_order_field = 'album'  # Allow sorting by album
     album_name.short_description = 'Album'  # Set the column header name
     custom_url.short_description = 'URL'  # Set custom header for the URL field
-    artist_names.short_description = 'Artists'  # Set custom header for the artist names
-    tag_names.short_description = 'Tags'  # Set custom header for the artist names
 
     # Use a custom form layout to display related artists and tags
     def get_form(self, request, obj=None, **kwargs):
