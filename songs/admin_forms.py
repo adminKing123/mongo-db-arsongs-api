@@ -61,7 +61,7 @@ class AlbumAdminForm(forms.ModelForm):
     image_file = forms.FileField(
         required=False,
         label="Upload Image File (1:1 aspect ratio)",
-        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif'])]
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])]
     )
 
     class Meta:
