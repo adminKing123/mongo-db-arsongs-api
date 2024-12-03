@@ -58,6 +58,45 @@ class Artist(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        # Save the instance to generate the ID
+        filename = f'{self.name}.png'
+        self.thumbnail300x300 = urllib.parse.quote(f'artist-images/300x300/{filename}')
+        self.thumbnail1200x1200 = urllib.parse.quote(f'artist-images/1200x1200/{filename}')
+        super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        # Extract the file path from the URL field (URL-encoded)
+        file_paths = [unquote(self.thumbnail300x300), unquote(self.thumbnail1200x1200)]
+
+        # GitHub API details
+        github_token = CONFIG["GITHUB_TOKEN"]
+        branch_name = CONFIG["BRANCH_NAME"]
+        github_repo_name = CONFIG["GITHUB_REPO_NAME"]
+        github = Github(github_token)
+        repo = github.get_user().get_repo(github_repo_name)
+
+        for file_path in file_paths:
+            try:
+                # Get the file from GitHub to confirm it exists
+                file_contents = repo.get_contents(file_path, ref=branch_name)
+
+                # Delete the file from GitHub
+                repo.delete_file(
+                    file_path,  # Path of the file in the repo
+                    f"Delete PNG file {self.name}",  # Commit message
+                    file_contents.sha,  # SHA of the file to delete
+                    branch=branch_name  # Specify the branch to delete from
+                )
+                print(f"Successfully deleted {file_path} from GitHub.")
+            except Exception as e:
+                print(f"Failed to delete file {file_path} from GitHub: {e}")
+
+        # Now delete the song instance from the database
+        super().delete(*args, **kwargs)
+
+    
 
 class Tag(models.Model):
     name = models.CharField(max_length=255, null=False, unique=True)

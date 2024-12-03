@@ -4,7 +4,7 @@ from django.http.request import HttpRequest
 from .models import Album, Artist, Tag, Song, SongArtist, SongTag
 from django.utils.safestring import mark_safe
 from config import CONFIG
-from .admin_forms import SongAdminForm, AlbumAdminForm
+from .admin_forms import SongAdminForm, AlbumAdminForm, ArtistAdminForm
 
 # Register Album model
 @admin.register(Album)
@@ -49,8 +49,23 @@ class AlbumAdmin(admin.ModelAdmin):
 # Register Artist model
 @admin.register(Artist)
 class ArtistAdmin(admin.ModelAdmin):
+    form = ArtistAdminForm
     list_display = ['name', 'custom_thumbnail300x300', 'custom_thumbnail1200x1200']
     search_fields = ['name']
+
+    def get_fields(self, request, obj=None):
+        if obj:  # Editing or viewing an existing Album
+            return ['name', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+        else:  # Adding a new Album
+            return ['name', 'image_file']
+
+        
+    def get_readonly_fields(self, request, obj):
+        if obj:  # Editing or viewing an existing Song
+            return ['name', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+        else:  # Adding a new Song
+            return ['thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
+
 
     def custom_thumbnail300x300(self, obj):
         # Custom logic for the URL (display as a clickable link)
@@ -65,9 +80,7 @@ class ArtistAdmin(admin.ModelAdmin):
     def custom_thumbnailpreview(self, obj):
         link = f'{CONFIG["SRC_URI"]}{obj.thumbnail300x300}'  # Generate the full URL
         return mark_safe(f'<img src="{link}" alt="{obj.name}" width="300" height="300" style="border: 1px solid var(--border-color);border-radius:4px;" />')
-
-    fields = ['name', 'thumbnail300x300', 'thumbnail1200x1200', 'custom_thumbnailpreview']
-    readonly_fields = ['custom_thumbnailpreview']
+    
     custom_thumbnail300x300.short_description = 'thumbnail300x300'
     custom_thumbnail1200x1200.short_description = 'thumbnail1200x1200'
     custom_thumbnailpreview.short_description = 'Thumbnail Preview'
