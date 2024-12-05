@@ -92,6 +92,7 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ['name']
 
 
+# Resgister Song model
 class SongArtistInline(admin.TabularInline):
     model = SongArtist
     extra = 0  # Number of empty forms to display initially
