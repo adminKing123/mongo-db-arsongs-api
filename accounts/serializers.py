@@ -11,6 +11,8 @@ class RegisterAPISerializer(serializers.Serializer):
     username = serializers.CharField(required=True, max_length=150, validators=[UniqueValidator(queryset=User.objects.all())])
     email = serializers.EmailField(required=True, validators=[UniqueValidator(queryset=User.objects.all())])
     password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+    first_name = serializers.CharField(required=True, max_length=30)
+    last_name = serializers.CharField(required=True, max_length=30)
 
 class LogoutAPISerializer(serializers.Serializer):
     logout_all_devices = serializers.BooleanField(default=False, required=False)

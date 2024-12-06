@@ -38,8 +38,14 @@ class ResgisterAPIView(APIView):
         serializer = RegisterAPISerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
-            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'], is_active=False)
-            user.is_active = False  # Set user as inactive until email verification
+            user = User.objects.create_user(
+                username=data['username'], 
+                email=data['email'], 
+                password=data['password'], 
+                first_name=data['first_name'], 
+                last_name=data['last_name'], 
+                is_active=False
+            )
             OTP = generateOTP(6)
             cache.set(user.email, OTP, timeout=120)
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
