@@ -1,5 +1,5 @@
 from rest_framework import viewsets
-from .models import Album, Artist, Tag, Song
+from .models import Album, Artist, Tag, Song, UserSongHistory
 from .serializers import AlbumSerializer, ArtistSerializer, TagSerializer, SongSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from .filters import SongFilter, ArtistFilter, AlbumFilter, TagFilter
@@ -29,4 +29,10 @@ class SongViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = SongFilter
 
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        song = self.get_object()
+        if (user.is_authenticated):
+            UserSongHistory.objects.create(user=user, song=song)
+        return super().retrieve(request, *args, **kwargs)
 

@@ -1,10 +1,17 @@
 from typing import Any
 from django.contrib import admin
 from django.http.request import HttpRequest
-from .models import Album, Artist, Tag, Song, SongArtist, SongTag
+from .models import Album, Artist, Tag, Song, SongArtist, SongTag, UserSongHistory
 from django.utils.safestring import mark_safe
 from config import CONFIG
 from .admin_forms import SongAdminForm, AlbumAdminForm, ArtistAdminForm
+
+# Register Album model
+@admin.register(UserSongHistory)
+class UserSongHistoryAdmin(admin.ModelAdmin):
+    list_display = ['user__username', 'song__original_name', 'accessed_at']
+    sortable_by = ['accessed_at']
+    readonly_fields = ['user', 'song', 'accessed_at']
 
 # Register Album model
 @admin.register(Album)

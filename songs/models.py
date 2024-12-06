@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.utils.timezone import now
 import urllib.parse
 from urllib.parse import unquote
 from github import Github
@@ -96,8 +98,6 @@ class Artist(models.Model):
         # Now delete the song instance from the database
         super().delete(*args, **kwargs)
 
-    
-
 class Tag(models.Model):
     name = models.CharField(max_length=255, null=False, unique=True)
 
@@ -164,3 +164,11 @@ class SongArtist(models.Model):
 class SongTag(models.Model):
     song = models.ForeignKey(Song, on_delete=models.CASCADE, related_name='song_tags')
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name='song_tags')
+
+class UserSongHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='song_history')
+    song = models.ForeignKey('Song', on_delete=models.CASCADE, related_name='user_history')
+    accessed_at = models.DateTimeField(default=now)
+
+    class Meta:
+        ordering = ['-accessed_at']
