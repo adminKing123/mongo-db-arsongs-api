@@ -1,13 +1,14 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer
+from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer, VerifyEmailnActivateAccountAPISerializer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from django.core.cache import cache
 from .helpers import generateOTP
+from config import CONFIG
 
 class LoginWithUsernameAPIView(APIView):
     def post(self, request):
@@ -48,7 +49,27 @@ class ResgisterAPIView(APIView):
             )
             OTP = generateOTP(6)
             cache.set(user.email, OTP, timeout=120)
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+            if (CONFIG["DEBUG"]): data["OTP"] = OTP
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VerifyEmailnActivateAPIAccountView(APIView):
+    def post(self, request):
+        serializer = VerifyEmailnActivateAccountAPISerializer(data=request.data)
+
+        if serializer.is_valid():
+            data = serializer.validated_data
+            CACHED_OTP = cache.get(data['email'])
+            if (CACHED_OTP != data['OTP']): return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user = User.objects.get(email=data['email'])
+                user.is_active = True
+                user.save()
+                cache.delete(data['email'])
+                return Response({"message": "Email verified successfully."}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"error": "Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPIView(APIView):
