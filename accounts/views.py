@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from django.core.cache import cache
+from .helpers import generateOTP
 
 class LoginWithUsernameAPIView(APIView):
     def post(self, request):
@@ -35,9 +37,14 @@ class ResgisterAPIView(APIView):
     def post(self, request):
         serializer = RegisterAPISerializer(data=request.data)
         if serializer.is_valid():
+            data = serializer.validated_data
+            user = User.objects.create_user(username=data['username'], email=data['email'], password=data['password'], is_active=False)
+            user.is_active = False  # Set user as inactive until email verification
+            OTP = generateOTP(6)
+            cache.set(user.email, OTP, timeout=120)
             return Response(serializer.validated_data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
