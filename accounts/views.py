@@ -1,10 +1,11 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer
+from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
+from django.core.cache import cache
 
 class LoginWithUsernameAPIView(APIView):
     def post(self, request):
@@ -30,6 +31,13 @@ class LoginWithUsernameAPIView(APIView):
             return Response({"error": "Invalid username or password."}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class ResgisterAPIView(APIView):
+    def post(self, request):
+        serializer = RegisterAPISerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -38,7 +46,6 @@ class LogoutAPIView(APIView):
             serializer = LogoutAPISerializer(data=request.data)
             if (serializer.is_valid()):
                 data = serializer.validated_data
-                print(data['logout_all_devices'])
                 if (data['logout_all_devices']):
                     token = Token.objects.get(user=request.user)
                     token.delete()
