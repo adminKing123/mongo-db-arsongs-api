@@ -171,4 +171,7 @@ class UserSongHistory(models.Model):
     accessed_at = models.DateTimeField(default=now)
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'song'], name='unique_user_song_history')
+        ]
         ordering = ['-accessed_at']
