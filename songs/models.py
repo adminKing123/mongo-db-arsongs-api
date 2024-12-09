@@ -169,6 +169,7 @@ class UserSongHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='song_history')
     song = models.ForeignKey('Song', on_delete=models.CASCADE, related_name='user_history')
     accessed_at = models.DateTimeField(default=now)
+    count = models.PositiveBigIntegerField(default=0)
 
     class Meta:
         constraints = [

@@ -34,10 +34,14 @@ class SongViewSet(viewsets.ReadOnlyModelViewSet):
         user = request.user
         song = self.get_object()
         if user.is_authenticated:
-            UserSongHistory.objects.update_or_create(
+            user_song_history, created = UserSongHistory.objects.update_or_create(
                 user=user,
                 song=song,
                 defaults={'accessed_at': now()}
             )
+            if not created:
+                user_song_history.count += 1
+            else:
+                user_song_history.count = 1
+            user_song_history.save()
         return super().retrieve(request, *args, **kwargs)
-

@@ -9,9 +9,9 @@ from .admin_forms import SongAdminForm, AlbumAdminForm, ArtistAdminForm
 # Register Album model
 @admin.register(UserSongHistory)
 class UserSongHistoryAdmin(admin.ModelAdmin):
-    list_display = ['user__username', 'song__original_name', 'accessed_at']
-    sortable_by = ['accessed_at']
-    readonly_fields = ['user', 'song', 'accessed_at']
+    list_display = ['user__username', 'song__original_name', 'accessed_at', 'count']
+    sortable_by = ['accessed_at', 'count']
+    readonly_fields = ['user', 'song', 'accessed_at', 'count']
 
 # Register Album model
 @admin.register(Album)
