@@ -44,4 +44,6 @@ class SongViewSet(viewsets.ReadOnlyModelViewSet):
             else:
                 user_song_history.count = 1
             user_song_history.save()
+        song.count += 1
+        song.save()
         return super().retrieve(request, *args, **kwargs)

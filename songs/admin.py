@@ -112,8 +112,9 @@ class SongTagInline(admin.TabularInline):
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
     form = SongAdminForm
-    list_display = ['original_name', 'album_name', 'year', 'custom_url']  # Add 'artist_names' to list_display
+    list_display = ['original_name', 'album_name', 'album__year', 'custom_url', 'count']  # Add 'artist_names' to list_display
     search_fields = ['original_name']
+    sortable_by = ['original_name', 'album__year', 'count']
     inlines = [SongArtistInline, SongTagInline]  # Show SongArtists and SongTags as inlines
 
     def get_fields(self, request, obj=None):
@@ -124,16 +125,13 @@ class SongAdmin(admin.ModelAdmin):
         
     def get_readonly_fields(self, request, obj):
         if obj:  # Editing or viewing an existing Song
-            return ['audio_preview', 'custom_lyrics', 'title', 'url', 'original_name', 'album_name']
+            return ['audio_preview', 'custom_lyrics', 'title', 'url', 'original_name', 'album_name', 'count']
         else:  # Adding a new Song
-            return []
+            return ['count']
 
     # Custom method to display album name instead of ID
     def album_name(self, obj):
         return mark_safe(f'<a href="/admin/songs/album/{obj.album.id}/change/">{obj.album.title}</a>')
-    
-    def year(self, obj):
-        return obj.album.year  # Access the year of the related album
     
     def custom_url(self, obj):
         # Custom logic for the URL (display as a clickable link)
