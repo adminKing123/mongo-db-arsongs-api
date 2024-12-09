@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer, VerifyEmailnActivateAccountAPISerializer
+from .serializers import LoginWithUsernameAPISerializer, LogoutAPISerializer, RegisterAPISerializer, VerifyEmailnActivateAccountAPISerializer, ResendEmailOTPAPISerializer
 from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
@@ -71,6 +71,21 @@ class VerifyEmailnActivateAPIAccountView(APIView):
             except User.DoesNotExist:
                 return Response({"error": "Invalid Request"}, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ResendEmailOTPView(APIView):
+    def post(self, request):
+        serializer = ResendEmailOTPAPISerializer(data=request.data)
+
+        if serializer.is_valid():
+            data = serializer.validated_data
+            CACHED_OTP = cache.get(data['email'])
+            if (CACHED_OTP): return Response({"error": "OTP Already Sent"}, status=status.HTTP_400_BAD_REQUEST)
+            OTP = generateOTP(6)
+            cache.set(data["email"], OTP, timeout=120)
+            if (CONFIG["DEBUG"]): data["OTP"] = OTP
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LogoutAPIView(APIView):
     permission_classes = [IsAuthenticated]

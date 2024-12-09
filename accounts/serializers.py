@@ -23,5 +23,8 @@ class VerifyEmailnActivateAccountAPISerializer(serializers.Serializer):
             MaxLengthValidator(CONFIG["OTP_LENGTH"])
         ])
 
+class ResendEmailOTPAPISerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    
 class LogoutAPISerializer(serializers.Serializer):
     logout_all_devices = serializers.BooleanField(default=False, required=False)
